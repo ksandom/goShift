@@ -31,7 +31,6 @@ else { // Decrypt (backwards).
     $tables=generateTables(-1);
 }
 
-
 $stdIn = fopen('php://stdin', 'r');
 $stdOut = fopen('php://stdout', 'w');
 $pos=0;
@@ -144,9 +143,10 @@ function keyToOffsets($key) {
 
     for ($inPos=0; $inPos<$inKeyLength; $inPos++) {
         $char=substr($key, $inPos, 1);
-        $output[$outPos]=bitsToNumber(subBits(charToBits($char), 0, 2)) + 1;
+        $output[$outPos]=(bitsToNumber(subBits(charToBits($char), 0, 2)) % 7) + 1;
+
         $outPos++;
-        $output[$outPos]=bitsToNumber(subBits(charToBits($char), 2, 4)) + 1;
+        $output[$outPos]=(bitsToNumber(subBits(charToBits($char), 2, 4)) % 7) + 1;
         $outPos++;
     }
 
@@ -163,7 +163,9 @@ function generateTables($direction) {
         $table=array();
         $effectiveOffset=$offset*$direction;
         for ($value=0; $value<256; $value++) {
-            $table[$value]=bitsToNumber(shiftBits(numberToBits($value), $effectiveOffset));
+            $bits=numberToBits($value);
+            $shiftedBits=shiftBits($bits, $effectiveOffset);
+            $table[$value]=bitsToNumber($shiftedBits);
         }
 
         $tables[$offset]=$table;
