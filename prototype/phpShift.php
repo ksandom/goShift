@@ -31,6 +31,8 @@ else { // Decrypt (backwards).
     $tables=generateTables(-1);
 }
 
+$start = microtime(true);
+
 $stdIn = fopen('php://stdin', 'r');
 $stdOut = fopen('php://stdout', 'w');
 $pos=0;
@@ -44,6 +46,14 @@ while ($data=fread($stdIn, 1024)) {
 fclose($stdIn);
 fclose($stdOut);
 
+$stop = microtime(true);
+$elapsed = $stop - $start;
+$bytesPerSecond = $pos / $elapsed;
+$mBytesPerSecond = $bytesPerSecond / (1024 * 1024);
+
+$stdError = fopen('php://stderr', 'w');
+fwrite($stdError, "$mBytesPerSecond MB/s ($bytesPerSecond B/s).");
+fclose($stdError);
 
 
 function encode($dataIn, $key, $keyLength, $pos, $tables) {
