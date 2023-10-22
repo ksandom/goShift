@@ -37,7 +37,9 @@ $stdIn = fopen('php://stdin', 'r');
 $stdOut = fopen('php://stdout', 'w');
 $pos=0;
 
-while ($data=fread($stdIn, 1024)) {
+$blockSize=4*1024;
+
+while ($data=fread($stdIn, $blockSize)) {
     $encodedData=encode($data, $keyOffsets, $keyLength, $pos, $tables);
     $pos+=strlen($data);
     fwrite($stdOut, $encodedData);
