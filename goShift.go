@@ -4,6 +4,7 @@ import (
     "os"
     "log"
     "io"
+    "time"
 )
 
 func main() {
@@ -52,13 +53,15 @@ func main() {
     reader := io.Reader(os.Stdin)
     writer := io.Writer(os.Stdout)
 
+    start := time.Now()
+
     // Process the data.
     for {
         bufferIn := make([]byte, 1024)
         count, err := reader.Read(bufferIn)
         if count > 0 {
             bufferOut := encode(bufferIn, count, keyOffsets, keyLength, dSize, tables)
-            l.Println(count, len(bufferOut))
+            //l.Println(count, len(bufferOut))
             writer.Write(bufferOut)
 
             dSize += count
@@ -72,6 +75,15 @@ func main() {
             }
         }
     }
+
+    stop := time.Now()
+    duration := stop.Sub(start)
+    seconds := duration.Seconds()
+
+    bytesPerSecond := float64(dSize) / seconds
+    mBytesPerSecond := bytesPerSecond / (1024*1024)
+
+    l.Printf("MB/s: %g", mBytesPerSecond)
 }
 
 
