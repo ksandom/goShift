@@ -4,7 +4,7 @@
 
 key='A really SECURE key that no one will guess.'
 
-inFile="$2"
+inFile="$1"
 if [ "$inFile" == '' ] ;then
     inFile="test/whatIsThis.jpg"
 fi

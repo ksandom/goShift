@@ -70,7 +70,7 @@ function encode($dataIn, $key, $keyLength, $pos, $tables) {
         $offset=$key[$keyPos];
 
         // Do the conversion.
-        $charOut=chr($tables[$offset][ord($charIn)]);
+        $charOut=$tables[$offset][ord($charIn)];
         $dataOut.=$charOut;
     }
 
@@ -177,7 +177,7 @@ function generateTables($direction) {
         for ($value=0; $value<256; $value++) {
             $bits=numberToBits($value);
             $shiftedBits=shiftBits($bits, $effectiveOffset);
-            $table[$value]=bitsToNumber($shiftedBits);
+            $table[$value]=chr(bitsToNumber($shiftedBits));
         }
 
         $tables[$offset]=$table;
