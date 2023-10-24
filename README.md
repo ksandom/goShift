@@ -1,6 +1,6 @@
 # goShift
 
-A basic inline bit shifter for pseudo encryption.
+A basic inline bit shifter for very weak encryption.
 
 WARNING: This is not secure, and is easy to crack (entropy is very low). It's intended only as a proof of concept and an exercise for me to learn Go.
 
