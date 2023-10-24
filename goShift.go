@@ -3,8 +3,7 @@ package main
 import (
     "os"
     "log"
-    "fmt"
-    "bufio"
+    "io"
 )
 
 func main() {
@@ -15,7 +14,7 @@ func main() {
     var keyOffsets [32000]int
     var keyLength int
 
-    var tables [8][256]int
+    var tables [8][256]byte
 
     // Output is likely redirected to a file. So anything that we need to send to the user needs to go to stderr.
     l := log.New(os.Stderr, "", 0)
@@ -49,46 +48,54 @@ func main() {
     }
 
 
-    scanner := bufio.NewScanner(os.Stdin)
-    for scanner.Scan() {
-        data := scanner.Text()
+    // Open streams.
+    reader := io.Reader(os.Stdin)
+    writer := io.Writer(os.Stdout)
 
-        encodedData := encode(data, keyOffsets, keyLength, dSize, tables)
-        fmt.Println(encodedData)
+    // Process the data.
+    for {
+        bufferIn := make([]byte, 1024)
+        count, err := reader.Read(bufferIn)
+        if count > 0 {
+            bufferOut := encode(bufferIn, count, keyOffsets, keyLength, dSize, tables)
+            l.Println(count, len(bufferOut))
+            writer.Write(bufferOut)
 
-        dSize += len(data)
-    }
+            dSize += count
+        }
 
-    if scanner.Err() != nil {
-        l.Println("Something went wrong while reading fro stdin.")
+        if err != nil {
+            if err == io.EOF {
+                break
+            } else {
+                l.Println(err)
+            }
+        }
     }
 }
 
 
-func encode(dataIn string, keyOffsets [32000]int, keyLength int, pos int, tables [8][256]int) string {
-    var dataOut string = ""
-    var dataLength int = len(dataIn)
+func encode(dataIn []byte, length int, keyOffsets [32000]int, keyLength int, pos int, tables [8][256]byte) []byte {
+    dataOut := make([]byte, length)
 
-    for i := 0; i < dataLength; i++ {
+    for i := 0; i < length; i++ {
         charIn := dataIn[i]
         absPos := pos + i
         keyPos := absPos % keyLength
 
         offset := keyOffsets[keyPos]
 
-        // Do the conversion.
-        charOut := string(tables[offset][int(charIn)])
-        dataOut = dataOut + charOut
+        charOut := tables[offset][charIn]
+        dataOut[i] = charOut
     }
 
     return dataOut
 }
 
 
-func generateTables(direction int) [8][256]int {
+func generateTables(direction int) [8][256]byte {
     // There are only 7 possible offsets (1-7), because we mustn't leave the bits unchanged.
-    var tables [8][256]int
-    //l := log.New(os.Stderr, "", 0)
+    var tables [8][256]byte
 
     for offset := 1; offset < 8; offset++ {
         effectiveOffset := offset * direction
@@ -96,9 +103,8 @@ func generateTables(direction int) [8][256]int {
         for value := 0; value<256; value++ {
             var bits [8]int = numberToBits(value)
             var shiftedBits [8]int = shiftBits(bits, effectiveOffset)
-            tables[offset][value] = bitsToNumber(shiftedBits)
-
-            // l.Println(offset, value, bits, shiftedBits, tables[offset][value])
+            var number byte = byte(bitsToNumber(shiftedBits))
+            tables[offset][value] = number
         }
     }
 
