@@ -2,7 +2,7 @@
 
 package main
 
-func encode(dataIn []byte, length int, keyOffsets [32000]int, keyLength int, pos int, tables [8][256]byte) []byte {
+func encode(dataIn []byte, length int, keyOffsets [32000]int, keyLength int, pos int, tables [8][256]byte, result chan []byte) {
     dataOut := make([]byte, length)
 
     for i := 0; i < length; i++ {
@@ -16,7 +16,8 @@ func encode(dataIn []byte, length int, keyOffsets [32000]int, keyLength int, pos
         dataOut[i] = charOut
     }
 
-    return dataOut
+    result <- dataOut
+    close(result)
 }
 
 

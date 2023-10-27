@@ -15,6 +15,8 @@ func main() {
     var keyOffsets [32000]int
     var keyLength int
 
+    parallelCount := 24
+
     var tables [8][256]byte
 
     // Output is likely redirected to a file. So anything that we need to send to the user needs to go to stderr.
@@ -57,22 +59,43 @@ func main() {
 
     // Process the data.
     for {
-        bufferIn := make([]byte, 1024)
-        count, err := reader.Read(bufferIn)
-        if count > 0 {
-            bufferOut := encode(bufferIn, count, keyOffsets, keyLength, dSize, tables)
-            //l.Println(count, len(bufferOut))
-            writer.Write(bufferOut)
+        // Load up data to be worked on.
+        finished := false
+        results := make([]chan []byte, parallelCount)
+        setLimit := 0
 
-            dSize += count
+        for blockNumber := 0; blockNumber < parallelCount; blockNumber++ {
+            results[blockNumber] = make(chan []byte)
+            bufferIn := make([]byte, 1024)
+            count, err := reader.Read(bufferIn)
+            if count > 0 {
+                //bufferOut :=
+                go encode(bufferIn, count, keyOffsets, keyLength, dSize, tables, results[blockNumber])
+                //l.Println(count, len(bufferOut))
+
+                dSize += count
+            }
+
+            if err != nil {
+                if err == io.EOF {
+                    finished = true
+                    break
+                } else {
+                    l.Println(err)
+                }
+            }
+            setLimit++
         }
 
-        if err != nil {
-            if err == io.EOF {
-                break
-            } else {
-                l.Println(err)
-            }
+        // Wait for data, and write it out in order.
+        for blockNumber := 0; blockNumber < setLimit; blockNumber++ {
+            data := <- results[blockNumber]
+            writer.Write(data)
+        }
+
+        // Make sure we cascade out.
+        if finished {
+            break
         }
     }
 
@@ -86,5 +109,3 @@ func main() {
 
     l.Printf("MB/s: %g", mBytesPerSecond)
 }
-
-
