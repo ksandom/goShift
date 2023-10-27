@@ -4,6 +4,8 @@ A basic inline bit shifter for very weak encryption.
 
 WARNING: This is not secure, and is easy to crack (entropy is very low). It's intended only as a proof of concept and an exercise for me to learn Go.
 
+I had [a brief play with threading](https://github.com/ksandom/goShift/pull/1), which was pretty cool.
+
 ## How it works
 
 * The provided key splits each character of the key into 2 3 bit offsets.
