@@ -1,0 +1,12 @@
+#!/bin/bash
+
+. test/libTestSpeed.sh
+
+key='A really SECURE key that no one will guess.'
+
+inFile="$1"
+if [ "$inFile" == '' ] ;then
+    inFile="test/whatIsThis.jpg"
+fi
+
+testSpeed "$key" ./prototype/python/ps.py "$inFile"
