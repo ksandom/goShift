@@ -9,4 +9,4 @@ if [ "$inFile" == '' ] ;then
     inFile="test/whatIsThis.jpg"
 fi
 
-testSpeed "$key" ./prototype/phpShift.php "$inFile"
+testSpeed "$key" ./prototype/php/phpShift.php "$inFile"
