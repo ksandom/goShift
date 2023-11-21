@@ -18,5 +18,7 @@ function testSpeed
 
     md5sum "$inFile" "$decryptedFile"
 
+    ls -lh "$inFile" "$intermediateFile" "$decryptedFile"
+
     rm "$intermediateFile" "$decryptedFile"
 }
